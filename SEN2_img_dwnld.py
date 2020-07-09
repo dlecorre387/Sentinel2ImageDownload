@@ -1,5 +1,9 @@
 import os
 
+# improt datetime to convert between date and string format
+import datetime as dt
+dateformat = '%Y%m%d'
+
 # connect to the API
 from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
 
@@ -25,6 +29,13 @@ dates = {
         'month': ['01','05'],
         'day': ['01','01']
         }
+
+# give your preferred date(s)
+optdates = [dt.date(2020,3,31),dt.date(2019,7,31)]
+
+
+# state the maximum cloud cover percentage you would like images to have
+cloud_cover_percentage = 10
 
 # define output directory
 output_dir = "C:/Users/User/Documents/DownloadedImagesFolder"
@@ -55,14 +66,53 @@ if geojson_files_path is not None and ID_list is None:
                                            '{}{}{}'.format(dates['year'][1], dates['month'][1], dates['day'][1])),
                                      platformname='Sentinel-2',
                                      processinglevel='Level-2A',
-                                     cloudcoverpercentage=(0, 10))
+                                     cloudcoverpercentage=(0, cloud_cover_percentage))
                     
                 # form list of image IDs
                 product_ids = list(products)
+                
+                # if statement to avoid downloading error if no products can be found
+                if len(product_ids) == 0:
+                    print("No images for this polygon could be found for these dates")
+                    break
+                
+                # open empty list to store product sensing dates
+                sensingdates = []
+                
+                 # collect sensing dates
+                for productkey in list(products.keys()):
+                    sensingdates.append(dt.datetime.strptime(products[productkey]["sensingdate"],dateformat).date())
+                
+                # open empty list for storing sensing dates of products wanted for downloading
+                datestodwnld = []
+                
+                # loop through each inputted optimum date
+                for optimumdate in optdates:
                     
+                    # find how far each date is from the optimum dates
+                    daysaway = [sensingdate - optimumdate for sensingdate in sensingdates]
+                
+                    # find the index of these dates
+                    ind = daysaway.index(min(daysaway))
+                    
+                    # store list of dates of images to download
+                    datestodwnld.append(sensingdates[ind])
+                
+                for productkey in list(products.keys()):
+                        
+                    # find dates which are not wanted for downloading
+                        if dt.datetime.strptime(products[productkey]["sensingdate"],dateformat).date() != any(datestodwnld):
+                                
+                            # remove products that are too from the optimum dates
+                            del products[productkey]
+                        
+                        else:
+                            continue
+                
                 # print all image IDs which satify conditions
                 print(list(products))
-        
+                
+                # print download message for each product
                 print("Downloading images containing polygon #{} of {} found in path #{}: {}".format(j+1, len(read_geojson(path)), i+1, path))
         
                 # download single scene by known product ID
@@ -82,7 +132,7 @@ if geojson_files_path is not None and ID_list is None:
                                          date=('{}'.format(seasons[season][0]),'{}'.format(seasons[season][1])),
                                          platformname='Sentinel-2',
                                          processinglevel='Level-2A',
-                                         cloudcoverpercentage=(0, 10))
+                                         cloudcoverpercentage=(0, cloud_cover_percentage))
                             
                     # form list of image IDs
                     product_ids = list(products)
@@ -115,6 +165,7 @@ if geojson_files_path is not None and ID_list is None:
                     # print all image IDs which satify conditions
                     print(list(products))
                         
+                    # print download message for each product
                     print("Downloading image containing polygon #{} of {} found in path #{}: {}".format(j+1, len(read_geojson(path)), i+1, path))
                         
                     # download single scene by known product id
@@ -138,6 +189,7 @@ elif ID_list is not None and geojson_files_path is None:
             # form list with only one element
             product_id = list(products)[0]
             
+            # print download message for each product
             print("Downloading image ID: {} ({} of {})".format(ID, i+1, len(ID_list)))
             
             # download single scene by known product id
