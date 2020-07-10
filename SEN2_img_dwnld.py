@@ -2,7 +2,7 @@ import os
 
 # improt datetime to convert between date and string format
 import datetime as dt
-dateformat = '%Y%m%d'
+from datetime import timedelta
 
 # connect to the API
 from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
@@ -79,9 +79,9 @@ if geojson_files_path is not None and ID_list is None:
                 # open empty list to store product sensing dates
                 sensingdates = []
                 
-                 # collect sensing dates
+                # collect sensing dates
                 for productkey in list(products.keys()):
-                    sensingdates.append(dt.datetime.strptime(products[productkey]["sensingdate"],dateformat).date())
+                    sensingdates.append(products[productkey]["ingestiondate"].date())
                 
                 # open empty list for storing sensing dates of products wanted for downloading
                 datestodwnld = []
@@ -91,21 +91,25 @@ if geojson_files_path is not None and ID_list is None:
                     
                     # find how far each date is from the optimum dates
                     daysaway = [sensingdate - optimumdate for sensingdate in sensingdates]
-                
-                    # find the index of these dates
-                    ind = daysaway.index(min(daysaway))
+                    
+                    # convert from timedelta to absolute float value
+                    daysawayfloat = [abs(dayaway.total_seconds()) for dayaway in daysaway]
+                    
+                    # find the index of these dates of the best images
+                    ind = daysawayfloat.index(min(daysawayfloat))
                     
                     # store list of dates of images to download
                     datestodwnld.append(sensingdates[ind])
                 
+                # loop through each product
                 for productkey in list(products.keys()):
                         
-                    # find dates which are not wanted for downloading
-                        if dt.datetime.strptime(products[productkey]["sensingdate"],dateformat).date() != any(datestodwnld):
+                        # find dates which are not wanted for downloading
+                        if products[productkey]["ingestiondate"].date() != datestodwnld[0] and products[productkey]["ingestiondate"].date() != datestodwnld[1]:
                                 
-                            # remove products that are too from the optimum dates
+                            # remove products that are too far from the optimum dates
                             del products[productkey]
-                        
+                    
                         else:
                             continue
                 
