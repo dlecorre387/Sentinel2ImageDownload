@@ -2,7 +2,6 @@ import os
 
 # improt datetime to convert between date and string format
 import datetime as dt
-from datetime import timedelta
 
 # connect to the API
 from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt

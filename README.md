@@ -22,6 +22,7 @@ Assuming these steps have been followed, running the script will start the image
 Running this script will download four images containing your each of your polygons (one for each season), with each image having the lowest cloud cover percentage available on those dates.
 
 - If you would rather specify the dates yourself, then simply make 'seasons' equal to 'None' and give your start and end dates. The first element of each of the dictionary values correspond to the start year, month and day - and the second element is for the end year, month and day. If you want to look on an exact date, then make these two elements equal.
+- Since this script was written to download satellite images for the purposes of filed boundary detection, you can input two optimum dates that you would like your downloaded images to be taken closest to. For example, the default is set to the midpoints of the two harvest seasons in Ethiopia, as the crops will make different fields and their boundaries look much more obvious. However, these dates can represent whichever ideal times you would like and should be input into the 'optdates' variable as [dt.date(YYYY,M,DD), etc]. Like before, if you also only want to set a preference for one date then you can make the two elements of the list equal.
 - As usual, an output directory, username and password are also required.
 
 Running the script now should download all images taken within your dates which contain your chosen polygons.
