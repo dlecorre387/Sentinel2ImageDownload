@@ -1,8 +1,8 @@
 # How to Use Sentinel 2 Satellite Image Download Script:
 
 The above python script allows you to find Sentinel 2 images in two different ways:
-- You can either download a specific image (or images) by using its Copernicus Open Access Hub product ID code
-- Or you can search for images taken of a certain area within a given timeframe, by inputting a directory for a polygon shapefile (must be a .geojson file)
+- You can either download a specific image (or images) by using its Copernicus Open Access Hub product ID.
+- Or you can search for images taken of a certain area of interest (AOI) within a given timeframe, by inputting a directory for a polygon shapefile (must be a .geojson file).
 
 ## Downloading Images Using Product ID(s):
 
@@ -15,14 +15,13 @@ Assuming these steps have been followed, running the script will start the image
 ## Downloading Images Taken Within Certain Seasons or Specific Dates:
 
 - The first step here is to ensure that the 'ID_list' variable is equal to 'None'. You can either delete the example list next to it or simply comment it out.
-- Once that is done, next to 'geojson_files_path' you will need to give the file location of the polygon shapefile of the area you want to search for images within. If you wish to search for multiple areas, you can either list the directories (e.g. geojson_files_path = ['C:/directory1', 'C:/directory2']) or you can give a .geojson file which has multiple polygons in it (as the script will loop through each polygon).
-- Next, you must decide whether to search for images which were taken either within certain seasons, or within a specific set of dates. If you wish to look for seasonal images, then make sure that the 'dates' variable is 'None' and do the same for the keys of the seasons dictionary that you do not want images for (e.g. 'summer': None, 'autumn': [20190901, 20191130], etc).
+- Once that is done, next to 'geojson_files_path' you will need to give the file location of the polygon shapefile of the area you want to search for images within. If you wish to search for multiple AOIs, you can either list the directories (e.g. geojson_files_path = ['C:/directory1', 'C:/directory2']) or you can give a .geojson file which has multiple polygons in it (as the script will loop through each polygon).
+- Next, you must decide whether to search for images which were taken either within certain seasons, or within a specific set of dates. If you wish to look for seasonal images, then make sure that the 'dates' variable is 'None' and do the same for the keys of the seasons dictionary that you do not want images for (e.g. 'summer': None, 'autumn': [0901, 1130], etc). You will also need to specify the year that you would like to search for images in.
 - As with the product ID method, you will need to state an output directory and give your username and password (details for this step are given in the previous section).
 
-Running this script will download four images containing your each of your polygons (one for each season), with each image having the lowest cloud cover percentage available on those dates.
+Running this script will download four images containing your each of your AOIs (one for each season), with each image having the lowest cloud cover percentage available on those dates.
 
 - If you would rather specify the dates yourself, then simply make 'seasons' equal to 'None' and give your start and end dates. The first element of each of the dictionary values correspond to the start year, month and day - and the second element is for the end year, month and day. If you want to look on an exact date, then make these two elements equal.
-- Since this script was written to download satellite images for the purposes of filed boundary detection, you can input two optimum dates that you would like your downloaded images to be taken closest to. For example, the default is set to the midpoints of the two harvest seasons in Ethiopia, as the crops will make different fields and their boundaries look much more obvious. However, these dates can represent whichever ideal times you would like and should be input into the 'optdates' variable as [dt.date(YYYY,M,DD), etc]. Like before, if you also only want to set a preference for one date then you can make the two elements of the list equal.
 - As usual, an output directory, username and password are also required.
 
 Running the script now should download all images taken within your dates which contain your chosen polygons.
