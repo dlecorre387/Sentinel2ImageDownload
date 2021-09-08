@@ -1,49 +1,57 @@
 import os
-
-# connect to API
 from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
 
-# please input your SciHub username and password
+'''
+User Inputs:
+    - Please input your SciHub username and password
+    - State Sentinel-2 image ID(s) as a list if a specific image(s) are required
+    - Or copy and paste the file path to your chosen area of interest (in .geojson format)
+    - In either case, make sure the other variable is equal to None
+    - Define your prefered download output directory
+'''
+
 api = SentinelAPI('username', 'password', 'https://scihub.copernicus.eu/apihub')
 
-# state image ID(s) if a specific image is required
-ID_list = None
-#['ProductID']
+ID_list = ['ProductID']
 
-# or copy and paste the file path to your chosen area of interest (in .geojson format)
-geojson_files_path = None
-#['C:/Users/User/Documents/AreaOfInterest.geojson']
+geojson_files_path = ['C:/Users/User/Documents/AOI.geojson']
 
-# in either case, make sure the other variable is equal to None
-
-# define your prefered downolad output directory
-output_dir = "C:/Users/User/Documents/DowloadedImages"
+output_dir = "C:/Users/User/Downloads/outputs"
 
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
-# if downloading images of an AOI, specify the dates you would like to search between
+'''
+Choosing timeframe for AOI image acquisition:
+    - If downloading images of an AOI, specify the dates you would like to search between in the dictionary
+    - Or you can download an image for each season for a specific year
+    - Unnecessary season can be set to zero in the dictionary to skip image download
+    - Again, in either case make sure that the other variable between dates/seasons is set to None
+'''
+
+dates = {
+        'year': ['2020','2021'],
+        'month': ['01','01'],
+        'day': ['11','11']
+        }
+
+# OR
+
 dates = None
-        #{
-        #'year': ['2019','2019'],
-        #'month': ['01','12'],
-        #'day': ['01','31']
-        #}
 
-# or you can download four seasonal images for a specific year
+seasons = {
+            'spring': ['0301','0531'],
+            'summer': ['0601','0831'],
+            'autumn': ['0901','1130'],
+            'winter': ['1201','0228']
+            }
+
+# OR
+
 seasons = None
-        #{
-        #'spring': [0301,0531],
-        #'summer': [0601,0831],
-        #'autumn': [0901,1130],
-        #'winter': [1201,0228]
-        #}
 
-# delete the None and uncomment the dictionary as needed
-# but again, in either case make sure that the other variable between dates/seasons is set to None
-
-# input your chosen year as an integer
-year = 2019
+# input your chosen year for seasonal image download as an integer
+year = 2021
 
 # and your desired cloud cover tolerance
 cloud_cover_percentage = 10
@@ -57,7 +65,7 @@ if ID_list is None and geojson_files_path is not None:
         # loop through features within the same file
         for j, geometry in enumerate(read_geojson(path)["features"]):
             
-            # converts to well-kown text
+            # converts to well-known text
             footprint = geojson_to_wkt(geometry)
             
             # determine if searching by dates or by seasons
@@ -82,20 +90,20 @@ if ID_list is None and geojson_files_path is not None:
                 # sort products by their cloud cover percentages
                 products_df_sorted = products_df.sort_values(['cloudcoverpercentage'], ascending=[True])
                 
-                # keep only the three with the lowest cloud cover %s
-                products_df_sorted = products_df_sorted.head(3)
+                # keep only the image with the lowest cloud cover %s
+                products_df_sorted = products_df_sorted.head(1)
                 
                 # loop through the products to find the images with best cloud covers
                 for productkey in list(products.keys()):
                     
                     # find products that are not those three
-                    if productkey == any(products_df_sorted.index) is False:
+                    if productkey != products_df_sorted.index:
                         
                         # delete those products
                         del products[productkey]
                 
                 # print downloading message
-                print("Downloading the three least cloudy images covering AOI {} taken between {}/{}/{} and {}/{}/{}".format(j+1,dates['day'][0],dates['month'][0],dates['year'][0],dates['day'][1],dates['month'][1],dates['year'][1]))
+                print("Downloading the least cloudy image covering AOI {} taken between {}/{}/{} and {}/{}/{}".format(j+1,dates['day'][0],dates['month'][0],dates['year'][0],dates['day'][1],dates['month'][1],dates['year'][1]))
                 
                 # start product download to output directory
                 api.download_all(products,output_dir)
